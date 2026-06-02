@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Generator</title>
+    <style>
+        :root {
+            --bg-base: #0f1017;
+            --card-bg: rgba(22, 24, 38, 0.75);
+            --border-glow: rgba(124, 92, 255, 0.2);
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --text-main: #e2e5f0;
+            --text-muted: #8a8fca;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --input-bg: rgba(10, 11, 18, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(168, 85, 247, 0.12) 0px, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Animated Stickers/Doodles */
+        .doodle {
+            position: absolute;
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 0;
+            filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.2));
+        }
+
+        .doodle-1 {
+            top: 12%;
+            left: 8%;
+            animation: floatMove 14s infinite ease-in-out;
+        }
+
+        .doodle-2 {
+            bottom: 15%;
+            right: 8%;
+            animation: floatMove 18s infinite ease-in-out reverse;
+        }
+
+        .doodle-3 {
+            top: 65%;
+            left: 12%;
+            animation: spinSlow 25s infinite linear;
+        }
+
+        .doodle-4 {
+            top: 20%;
+            right: 15%;
+            animation: pulseGlow 6s infinite ease-in-out;
+        }
+
+        @keyframes floatMove {
+            0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+            50% { transform: translateY(-25px) translateX(15px) rotate(8deg); }
+            100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+        }
+
+        @keyframes spinSlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.2; }
+            50% { transform: scale(1.15); opacity: 0.35; }
+        }
+
+        /* Container Blueprint */
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            padding: 45px 40px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 480px;
+            z-index: 10;
+            position: relative;
+            animation: cardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardEntrance {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header-area {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header-area svg {
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 12px rgba(123, 92, 255, 0.3));
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #ffffff 40%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+            padding-left: 2px;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 15px;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            background: rgba(15, 16, 26, 0.75);
+        }
+
+        input::placeholder {
+            color: rgba(138, 143, 202, 0.4);
+        }
+
+        select {
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238a8fca' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        select option {
+            background: #151622;
+            color: var(--text-main);
+        }
+
+        button[type="submit"] {
+            margin-top: 8px;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+            border: none;
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+
+    <svg class="doodle doodle-1" width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 5L45 30L70 35L45 40L40 65L35 40L10 35L35 30Z" fill="#818cf8"/>
+    </svg>
+
+    <svg class="doodle doodle-2" width="90" height="90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="30" stroke="#c084fc" stroke-width="4" stroke-dasharray="10 6"/>
+        <path d="M50 10V30M50 70V90M10 50H30M70 50H90" stroke="#c084fc" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+
+    <svg class="doodle doodle-3" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="40" height="40" rx="8" stroke="#6366f1" stroke-width="3" transform="rotate(15 30 30)"/>
+    </svg>
+
+    <svg class="doodle doodle-4" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 25C18 25 25 18 25 10C25 18 32 25 40 25C32 25 25 32 25 40C25 32 18 25 10 25Z" fill="#38bdf8"/>
+    </svg>
+
+    <div class="container">
+        <div class="header-area">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#6366f1"/>
+                <path d="M2 17L12 22L22 17" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>Quiz Generator</h2>
+            <p class="subtitle">Instantly build tailored assessments with AI</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Topic</label>
+                <input type="text" name="topic" placeholder="e.g., Quantum Physics, Machine Learning" required>
+            </div>
+
+            <div class="form-group">
+                <label>Number of Questions</label>
+                <input type="number" name="num_questions" placeholder="e.g., 5" min="1" max="25" required>
+            </div>
+
+            <div class="form-group">
+                <label>Difficulty Level</label>
+                <select name="difficulty">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+
+            <button type="submit">Generate Quiz</button>
+        </form>
+    </div>
+
+</body>
+</html>
